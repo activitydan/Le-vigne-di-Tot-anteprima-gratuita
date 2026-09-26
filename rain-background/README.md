@@ -11,7 +11,8 @@ misurando uno screenshot dell'originale.
 
 | File | Contenuto |
 | --- | --- |
-| `rain-background.js` | L'effetto, come modulo ES |
+| `rain-background.tsx` | Componente React in un file unico, motore incluso |
+| `rain-background.js` | Lo stesso effetto come modulo ES, per pagine HTML senza React |
 | `index.html` | Demo con un pannello per regolare i parametri e copiare il codice |
 
 ## Vedere la demo
@@ -48,25 +49,25 @@ Il canvas va dimensionato via CSS; la risoluzione interna si adatta da sola.
 
 ## Uso in React / Next.js
 
-```jsx
-'use client';
-import { useEffect, useRef } from 'react';
-import { createRainBackground } from './rain-background';
+Copia `rain-background.tsx` nel progetto (per esempio in
+`components/ui/rain-background.tsx`): non dipende da altro che React. Il
+componente è un `<div>` con il canvas dietro ai figli, quindi gli dai sfondo e
+dimensioni come a un normale contenitore.
 
-export function RainBackground(options) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const rain = createRainBackground(ref.current, options);
-    return () => rain.destroy();
-  }, []); // le opzioni valgono al montaggio; per cambiarle dopo usa rain.setOptions()
-  return <canvas ref={ref} aria-hidden="true" className="absolute inset-0 -z-10 h-full w-full" />;
+```tsx
+import { RainBackground } from "@/components/ui/rain-background";
+
+export default function Hero() {
+  return (
+    <RainBackground className="min-h-screen bg-black text-white" speed={1.2}>
+      <h1>Il tuo titolo</h1>
+    </RainBackground>
+  );
 }
-
-// <section className="relative isolate bg-black">
-//   <RainBackground speed={1.2} />
-//   …
-// </section>
 ```
+
+Tutte le opzioni qui sotto sono anche props e si possono cambiare al volo;
+`paused` ferma l'animazione.
 
 ## Opzioni
 
@@ -83,8 +84,8 @@ export function RainBackground(options) {
 | `dotSpeed` | `1` | Moltiplicatore della deriva delle particelle (0 = ferme) |
 | `maxDpr` | `2` | Tetto al devicePixelRatio, per contenere il costo sugli schermi densi |
 
-`createRainBackground()` restituisce un oggetto con `setOptions(opzioni)`,
-`pause()`, `play()`, `paused` e `destroy()`.
+Nel modulo JS, `createRainBackground()` restituisce un oggetto con
+`setOptions(opzioni)`, `pause()`, `play()`, `paused` e `destroy()`.
 
 ## Come è stato ricostruito
 
