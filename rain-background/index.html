@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pioggia di luce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #000;
+    --ink: #f4f4f5;
+    --ink-soft: #a1a1aa;
+    --line: rgba(255, 255, 255, 0.14);
+    --panel: rgba(12, 12, 14, 0.86);
+    --field: rgba(255, 255, 255, 0.04);
+    --solid: #fff;
+    --on-solid: #000;
+    --sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--sans); }
+
+  .hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 96px 16px;
+    text-align: center;
+  }
+  .hero canvas { position: absolute; inset: 0; z-index: -1; display: block; width: 100%; height: 100%; }
+  .hero-copy { display: grid; justify-items: center; gap: 24px; max-width: 46rem; }
+  h1 {
+    margin: 0;
+    font-weight: 500;
+    font-size: clamp(2.25rem, 6.5vw, 3.75rem);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  h1 span {
+    display: block;
+    background: linear-gradient(180deg, #e4e4e7, #8b8b93);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lede { margin: 0; max-width: 34rem; color: var(--ink-soft); font-weight: 300; font-size: 1.125rem; text-wrap: pretty; }
+  .note { margin: 0; max-width: 34rem; color: var(--ink-soft); font-size: 0.875rem; }
+  .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 8px; }
+
+  .btn {
+    padding: 14px 22px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font: 600 0.8125rem/1 var(--sans);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .btn-solid { background: var(--solid); color: var(--on-solid); }
+  .btn-ghost { background: rgba(0, 0, 0, 0.45); color: var(--ink); border-color: rgba(255, 255, 255, 0.35); }
+  .btn-ghost:hover { border-color: rgba(255, 255, 255, 0.6); }
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--solid); outline-offset: 3px; }
+
+  .panel {
+    position: fixed;
+    z-index: 10;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: grid;
+    gap: 16px;
+    width: min(320px, calc(100% - 32px));
+    max-height: calc(100% - 32px);
+    overflow: auto;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .panel h2 { margin: 0; font-size: 1rem; font-weight: 500; }
+  .close {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .controls { display: grid; gap: 14px; margin: 0; }
+  .control { display: grid; gap: 6px; }
+  .control label, .control-color label { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-soft); font-size: 0.875rem; }
+  .control output { color: var(--ink); font: 500 0.8125rem/1.5 var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .control input[type='range'] { width: 100%; margin: 0; accent-color: var(--solid); }
+  .control-color { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .control-color input { width: 44px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: transparent; cursor: pointer; }
+  .code-label { color: var(--ink-soft); font-size: 0.875rem; }
+  .code {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--field);
+    color: var(--ink);
+    font: 400 0.75rem/1.5 var(--mono);
+    resize: none;
+  }
+  .code-block { display: grid; gap: 6px; }
+  .panel-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .panel-actions .btn { padding: 12px 16px; }
+  .status { margin: 0; min-height: 1.5em; color: var(--ink-soft); font-size: 0.8125rem; }
+
+  @media (max-width: 560px) {
+    .panel { left: 16px; width: auto; max-height: 70%; }
+  }
+</style>
+</head>
+<body>
+  <main class="hero">
+    <canvas id="rain" aria-hidden="true"></canvas>
+    <div class="hero-copy">
+      <h1>Pioggia di luce.<span>Ricreata in Canvas 2D.</span></h1>
+      <p class="lede">Linee da 1&nbsp;px che cadono con la coda sfumata e particelle che brillano, più luminose verso il basso. Nessuna dipendenza.</p>
+      <div class="actions">
+        <button class="btn btn-solid" id="open" type="button" aria-controls="panel" aria-expanded="false">Personalizza</button>
+        <button class="btn btn-ghost" id="toggle" type="button">Metti in pausa</button>
+      </div>
+      <p class="note" id="motion-note" hidden>Il tuo sistema chiede di ridurre il movimento: l'animazione parte solo se la avvii tu.</p>
+    </div>
+  </main>
+
+  <aside class="panel" id="panel" aria-labelledby="panel-title" hidden>
+    <div class="panel-head">
+      <h2 id="panel-title">Regola l'effetto</h2>
+      <button class="close" id="close" type="button" aria-label="Chiudi il pannello">×</button>
+    </div>
+    <form class="controls" id="controls">
+      <div class="control-color">
+        <label for="opt-color">Colore</label>
+        <input type="color" id="opt-color" value="#ffffff">
+      </div>
+    </form>
+    <div class="code-block">
+      <label class="code-label" for="code">Codice con queste opzioni</label>
+      <textarea class="code" id="code" rows="3" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="panel-actions">
+      <button class="btn btn-solid" id="copy" type="button">Copia codice</button>
+      <button class="btn btn-ghost" id="reset" type="button">Valori iniziali</button>
+    </div>
+    <p class="status" id="status" role="status"></p>
+  </aside>
+
+<script type="module">
+import { createRainBackground, DEFAULTS } from './rain-background.js';
+
+const CONTROLS = [
+  { key: 'density', label: 'Linee', min: 0, max: 15, step: 0.5, unit: ' / 100×100 px' },
+  { key: 'speed', label: 'Velocità', min: 0.1, max: 3, step: 0.1, unit: '×' },
+  { key: 'maxLength', label: 'Lunghezza massima', min: 20, max: 240, step: 5, unit: ' px' },
+  { key: 'opacity', label: 'Luminosità', min: 0.2, max: 3, step: 0.1, unit: '×' },
+  { key: 'topOpacity', label: 'Opacità in alto', min: 0, max: 1, step: 0.05, percent: true },
+  { key: 'centerBias', label: 'Addensamento al centro', min: 0, max: 1, step: 0.05, percent: true },
+  { key: 'dots', label: 'Particelle', min: 0, max: 6, step: 0.1, unit: ' / 100×100 px' },
+  { key: 'dotSpeed', label: 'Deriva particelle', min: 0, max: 5, step: 0.1, unit: '×' },
+];
+
+const $ = (id) => document.getElementById(id);
+const rain = createRainBackground($('rain'));
+const opts = { ...DEFAULTS };
+
+const format = (c, v) => (c.percent ? `${Math.round(v * 100)}%` : `${v}${c.unit}`);
+
+for (const c of CONTROLS) {
+  const row = document.createElement('div');
+  row.className = 'control';
+  row.innerHTML = `<label for="opt-${c.key}">${c.label}<output for="opt-${c.key}"></output></label>
+    <input type="range" id="opt-${c.key}" min="${c.min}" max="${c.max}" step="${c.step}">`;
+  $('controls').insertBefore(row, $('controls').lastElementChild);
+  const input = row.querySelector('input');
+  const output = row.querySelector('output');
+  c.sync = () => {
+    input.value = opts[c.key];
+    output.textContent = format(c, opts[c.key]);
+  };
+  input.addEventListener('input', () => {
+    opts[c.key] = parseFloat(input.value);
+    output.textContent = format(c, opts[c.key]);
+    apply({ [c.key]: opts[c.key] });
+  });
+}
+
+$('opt-color').addEventListener('input', (e) => {
+  opts.color = e.target.value;
+  apply({ color: opts.color });
+});
+
+function apply(change) {
+  rain.setOptions(change);
+  const diff = Object.entries(opts)
+    .filter(([k, v]) => v !== DEFAULTS[k])
+    .map(([k, v]) => `${k}: ${typeof v === 'string' ? `'${v}'` : v}`);
+  $('code').value = `createRainBackground(canvas${diff.length ? `, { ${diff.join(', ')} }` : ''});`;
+  $('status').textContent = '';
+}
+
+function syncAll() {
+  CONTROLS.forEach((c) => c.sync());
+  $('opt-color').value = opts.color;
+  apply({ ...opts });
+}
+
+$('reset').addEventListener('click', () => {
+  Object.assign(opts, DEFAULTS);
+  syncAll();
+});
+
+$('copy').addEventListener('click', () => {
+  navigator.clipboard.writeText($('code').value).then(
+    () => { $('status').textContent = 'Codice copiato negli appunti.'; },
+    () => {
+      $('code').select();
+      $('status').textContent = 'Copia automatica non disponibile: il codice è selezionato, copialo con Ctrl+C.';
+    },
+  );
+});
+
+function setPanel(open) {
+  $('panel').hidden = !open;
+  $('open').setAttribute('aria-expanded', String(open));
+  (open ? $('close') : $('open')).focus();
+}
+$('open').addEventListener('click', () => setPanel($('panel').hidden));
+$('close').addEventListener('click', () => setPanel(false));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !$('panel').hidden) setPanel(false);
+});
+
+function syncToggle() {
+  $('toggle').textContent = rain.paused ? 'Avvia animazione' : 'Metti in pausa';
+}
+$('toggle').addEventListener('click', () => {
+  if (rain.paused) rain.play();
+  else rain.pause();
+  syncToggle();
+});
+
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+const syncMotion = () => {
+  $('motion-note').hidden = !reduced.matches;
+  syncToggle();
+};
+reduced.addEventListener('change', syncMotion);
+
+syncAll();
+syncMotion();
+</script>
+</body>
+</html>
